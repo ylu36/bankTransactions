@@ -18,23 +18,23 @@ import java.io.*;
  
 public class HomeController extends Controller {
     String source_file = "../p3.owl"; 
-    String source_url = "http://semanticweb.org/james/ontologies/2018/9/csc750.owl"; 
+    String source_url = "http://semanticweb.org/james/ontologies/2018/9/csc750"; 
 //     String source_file = "../pizza.owl"; // This is your file on the disk
 // String source_url = "http://www.co-ode.org/ontologies/pizza/pizza.owl"; // Remember that IRI from before?
     String NS = source_url + "#";
     OntModel ontReasoned;
-    OntClass Merchant, Consumer, CommercialTransaction;
+    OntClass Merchant, Consumer, Transaction, CommercialTransaction;
 
     @Inject
         public HomeController() {
             System.out.println("init system...");
             this.ontReasoned = init();
             this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
-            
             this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
+            this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
             System.out.println(Merchant);
             System.out.println(Consumer);
-            // this.CommercialTransaction = ontReasoned.getOntClass(NS + "CommercialTransaction");
+            this.CommercialTransaction = ontReasoned.getOntClass(NS + "CommercialTransaction");
         }
 
         public OntModel init() {            
@@ -102,35 +102,37 @@ public class HomeController extends Controller {
         System.out.println(dpb);
         return ok(views.html.index.render());
     }
-    public Result addMerchant(int id) {
+    public Result addMerchant(String id) {
         ObjectNode result = Json.newObject();
-        Individual merchant = ontReasoned.createIndividual(NS + "Merchant" + id, Merchant);
+        Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
         System.out.println("uri is " + merchant);
         String uri = merchant.getURI();
-        Individual dpb = ontReasoned.getIndividual(NS + "Merchant" + id);
+        Individual dpb = ontReasoned.getIndividual(NS + id);
         System.out.println(dpb);
         result.put("status", "success");
         return ok(result);
     }
 
-    public Result addConsumer(int id) {
+    public Result addConsumer(String id) {
         ObjectNode result = Json.newObject();
-        Individual consumer = ontReasoned.createIndividual(NS + "Consumer" + id, Consumer);
+        Individual consumer = ontReasoned.createIndividual(NS + id, Consumer);
         // System.out.println("uri is " + consumer.getURI());
         result.put("status", "success");
         return ok(result);
     }
 
-    public Result addTransaction(int senderID, int receiverID, int transactionID) {
+    public Result addTransaction(String senderID, String receiverID, String transactionID) {
         ObjectNode result = Json.newObject();
-        
+        Individual tx = ontReasoned.getIndividual(NS + senderID);
+        Individual rx = ontReasoned.getIndividual(NS + receiverID);
+        Individual cheese = ontReasoned.createIndividual(NS + "cheese1", Transaction);
         result.put("status", "success");
         return ok(result);
     }
 
-    public Result isCommercial(int id) {
+    public Result isCommercial(String id) {
         ObjectNode result = Json.newObject();
-        Individual transaction = ontReasoned.getIndividual(NS + "Transaction" + id);
+        Individual transaction = ontReasoned.getIndividual(NS + id);
         String flag = (transaction.hasOntClass(CommercialTransaction)) ? "true" : "false";
         result.put("status", flag);
         return ok(result);
