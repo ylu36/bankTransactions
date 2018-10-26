@@ -24,7 +24,7 @@ public class HomeController extends Controller {
     String NS = source_url + "#";
     OntModel ontReasoned;
     OntClass Merchant, Consumer, Transaction, CommercialTransaction;
-
+    OntProperty hasReceiver, hasSender;
     @Inject
         public HomeController() {
             System.out.println("init system...");
@@ -35,6 +35,8 @@ public class HomeController extends Controller {
             System.out.println(Merchant);
             System.out.println(Consumer);
             this.CommercialTransaction = ontReasoned.getOntClass(NS + "CommercialTransaction");
+            this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
+            this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
         }
 
         public OntModel init() {            
@@ -125,7 +127,9 @@ public class HomeController extends Controller {
         ObjectNode result = Json.newObject();
         Individual tx = ontReasoned.getIndividual(NS + senderID);
         Individual rx = ontReasoned.getIndividual(NS + receiverID);
-        Individual cheese = ontReasoned.createIndividual(NS + "cheese1", Transaction);
+        Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
+        transaction.addProperty(hasSender, tx);
+        transaction.addProperty(hasReceiver, rx);
         result.put("status", "success");
         return ok(result);
     }
