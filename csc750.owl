@@ -89,15 +89,6 @@
     
 
 
-    <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#isTrusted -->
-
-    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#isTrusted">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ReflexiveProperty"/>
-    </owl:ObjectProperty>
-    
-
-
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -220,7 +211,9 @@
 
     <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction -->
 
-    <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction"/>
+    <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction">
+        <owl:disjointWith rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Trusted"/>
+    </owl:Class>
     
 
 
@@ -232,7 +225,7 @@
                 <owl:intersectionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Merchant"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#isParticipant"/>
+                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasParticipant"/>
                         <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Purchase_transaction"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
@@ -257,14 +250,6 @@
             <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Personal_transaction"/>
             <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Purchase_transaction"/>
             <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Refund_transaction"/>
-        </owl:members>
-    </rdf:Description>
-    <rdf:Description>
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction"/>
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Trusted"/>
         </owl:members>
     </rdf:Description>
 </rdf:RDF>
