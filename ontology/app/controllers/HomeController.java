@@ -23,7 +23,7 @@ public class HomeController extends Controller {
 // String source_url = "http://www.co-ode.org/ontologies/pizza/pizza.owl"; // Remember that IRI from before?
     String NS = source_url + "#";
     OntModel ontReasoned;
-    OntClass Merchant, Consumer, Transaction, CommercialTransaction;
+    OntClass Merchant, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
     OntProperty hasReceiver, hasSender;
     @Inject
         public HomeController() {
@@ -34,7 +34,10 @@ public class HomeController extends Controller {
             this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
             System.out.println(Merchant);
             System.out.println(Consumer);
-            this.CommercialTransaction = ontReasoned.getOntClass(NS + "CommercialTransaction");
+            this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
+            this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
+            this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
+            this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
             this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
             this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
         }
@@ -138,7 +141,50 @@ public class HomeController extends Controller {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
         String flag = (transaction.hasOntClass(CommercialTransaction)) ? "true" : "false";
-        result.put("status", flag);
+        result.put("result", flag);
+        return ok(result);
+    }
+
+    public Result isPersonal(String id) {
+        ObjectNode result = Json.newObject();
+        Individual transaction = ontReasoned.getIndividual(NS + id);
+        String flag = (transaction.hasOntClass(PersonalTransaction)) ? "true" : "false";
+        result.put("result", flag);
+        return ok(result);
+    }
+
+    public Result isPurchase(String id) {
+        ObjectNode result = Json.newObject();
+        Individual transaction = ontReasoned.getIndividual(NS + id);
+        String flag = (transaction.hasOntClass(PurchaseTransaction)) ? "true" : "false";
+        result.put("result", flag);
+        return ok(result);
+    }
+
+    public Result isRefund(String id) {
+        ObjectNode result = Json.newObject();
+        Individual transaction = ontReasoned.getIndividual(NS + id);
+        String flag = (transaction.hasOntClass(RefundTransaction)) ? "true" : "false";
+        result.put("result", flag);
+        return ok(result);
+    }
+
+    public Result isTrusted(String id) {
+        ObjectNode result = Json.newObject();
+        Individual merchant = ontReasoned.getIndividual(NS + id);
+        if() {
+
+        }
+        else {
+            result.put("result", "not a merchant");
+        }
+        return ok(result);
+    }
+    
+    public Result reset() {
+        ObjectNode result = Json.newObject();
+        
+        result.put("status", "success");
         return ok(result);
     }
 }
