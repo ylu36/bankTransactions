@@ -17,8 +17,9 @@ import java.util.*;
 import java.io.*;
  
 public class HomeController extends Controller {
-    String source_file = "../p3.owl"; 
-    String source_url = "http://semanticweb.org/james/ontologies/2018/9/csc750"; 
+    String source_file = "../csc750.owl"; 
+    String source_url = "http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl";
+     
 //     String source_file = "../pizza.owl"; // This is your file on the disk
 // String source_url = "http://www.co-ode.org/ontologies/pizza/pizza.owl"; // Remember that IRI from before?
     String NS = source_url + "#";
@@ -29,17 +30,17 @@ public class HomeController extends Controller {
         public HomeController() {
             System.out.println("init system...");
             this.ontReasoned = init();
-            this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
-            this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
-            this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
-            System.out.println(Merchant);
-            System.out.println(Consumer);
-            this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
-            this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
-            this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
-            this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
-            this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
-            this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
+            this.Merchant = ontReasoned.getOntClass(NS + "Person");
+        //     this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
+        //     this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
+        //     System.out.println(Merchant);
+        //     System.out.println(Consumer);
+        //     this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
+        //     this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
+        //     this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
+        //     this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
+        //     this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
+        //     this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
         }
 
         public OntModel init() {            
@@ -103,7 +104,11 @@ public class HomeController extends Controller {
     // }
     
     public Result index() {
-        Individual dpb = ontReasoned.getIndividual("http://semanticweb.org/james/ontologies/2018/9/csc750.owl#Merchant3");
+        String id = "Merchant3";
+        Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
+        System.out.println("uri is " + merchant);
+        String uri = merchant.getURI();
+        Individual dpb = ontReasoned.getIndividual(NS + id);
         System.out.println(dpb);
         return ok(views.html.index.render());
     }
@@ -172,12 +177,12 @@ public class HomeController extends Controller {
     public Result isTrusted(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.getIndividual(NS + id);
-        if() {
+        // if() {
 
-        }
-        else {
-            result.put("result", "not a merchant");
-        }
+        // }
+        // else {
+        //     result.put("result", "not a merchant");
+        // }
         return ok(result);
     }
     
