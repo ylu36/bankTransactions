@@ -213,21 +213,13 @@
     <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasSender"/>
+                <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing"/>
-        <rdfs:subClassOf>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasReceiver"/>
-                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasSender"/>
-                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -240,8 +232,8 @@
                 <owl:intersectionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Merchant"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasParticipant"/>
-                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Purchase_transaction"/>
+                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#isParticipant"/>
+                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Commercial_transaction"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -253,26 +245,6 @@
     <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // General axioms
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    <rdf:Description>
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
-        <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Commercial_transaction"/>
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Personal_transaction"/>
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Purchase_transaction"/>
-            <rdf:Description rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Refund_transaction"/>
-        </owl:members>
-    </rdf:Description>
 </rdf:RDF>
 
 

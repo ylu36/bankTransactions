@@ -23,13 +23,14 @@ public class HomeController extends Controller {
 // String source_url = "http://www.co-ode.org/ontologies/pizza/pizza.owl"; // Remember that IRI from before?
     String NS = source_url + "#";
     OntModel ontReasoned;
-    OntClass Merchant, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
+    OntClass Merchant, Trusted, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
     OntProperty hasReceiver, hasSender;
     @Inject
         public HomeController() {
             System.out.println("init system...");
             this.ontReasoned = init();
             this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
+            this.Trusted = ontReasoned.getOntClass(NS + "Trusted");
             this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
             this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
             this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
@@ -69,46 +70,11 @@ public class HomeController extends Controller {
             OntModel ontReasoned = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC, baseOntology);
             return ontReasoned;
         }
-
-    // public Result index() {
-    //     // Get the classes we need
-    //     OntModel ontReasoned = init();
-    //     OntClass pizza1 = ontReasoned.getOntClass(NS + "Pizza");
-    //     OntClass deepPanBase = ontReasoned.getOntClass(NS + "DeepPanqwreBase");
-    //     OntClass cheese1 = ontReasoned.getOntClass(NS + "CheeseTopping");
-    //     OntClass cheesyPizza = ontReasoned.getOntClass(NS + "CheeseyPizza");
-    // //    System.out.println("hahahahahah "+pizza1);
-    //     // Get the properties we need
-    //     OntProperty hasTopping = ontReasoned.getObjectProperty(NS + "hasTopping");
-    //     OntProperty hasBase = ontReasoned.getObjectProperty(NS + "hasBase");
-
-    //     // Create the individuals we need. We need a pizza and a topping.
-    //     Individual pizza = ontReasoned.createIndividual(NS + "mre", pizza1);
-    //     // System.out.println(pizza);
-    //     Individual cheese = ontReasoned.createIndividual(NS + "cheese1", cheese1);
-
-    //     // Also need a base, but it already exists in our ontology
-    //     Individual dpb = ontReasoned.getIndividual(NS + "DeepPanBase");
-
-    //     // Now add the properties
-    //     pizza.addProperty(hasBase, dpb);
-    //     pizza.addProperty(hasTopping, cheese);
-
-    //     // Now, we expect the reasoner to have figured out that our pizza also belongs to the class "CheesyPizza"
-    //     // because it has a cheese topping. (The CheesyPizza class was defined in terms of a restriction which needs some cheese topping).
-    //     System.out.println("pizza is cheesy:" + pizza.hasOntClass(cheesyPizza));  // should print true
-    //     return ok(views.html.index.render());
-    // }
     
     public Result index() {
-        String id = "Merchant3";
-        Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
-        System.out.println("uri is " + merchant);
-        String uri = merchant.getURI();
-        Individual dpb = ontReasoned.getIndividual(NS + id);
-        System.out.println(dpb);
         return ok(views.html.index.render());
     }
+
     public Result addMerchant(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
@@ -132,10 +98,6 @@ public class HomeController extends Controller {
         Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
         transaction.addProperty(hasSender, tx);
         transaction.addProperty(hasReceiver, rx);
-        String RDF = ontReasoned.getNsPrefixURI("rdf");
-        Property type = ontReasoned.getProperty(RDF, "type");
-        System.out.println("tx type = " + tx.getPropertyResourceValue(type).toString());
-        System.out.println("rx type = " + rx.getPropertyResourceValue(type).toString());
         result.put("status", "success");
         return ok(result);
     }
@@ -175,18 +137,19 @@ public class HomeController extends Controller {
     public Result isTrusted(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.getIndividual(NS + id);
-        // if() {
-
-        // }
-        // else {
-        //     result.put("result", "not a merchant");
-        // }
+        if(merchant.hasOntClass(Trusted)) {
+            String flag = (merchant.hasOntClass(Trusted))? "true" : "false";
+            result.put("result", flag);
+        }
+        else {
+            result.put("result", "not a merchant");
+        }
         return ok(result);
     }
     
     public Result reset() {
         ObjectNode result = Json.newObject();
-        
+        this.ontReasoned = init();
         result.put("status", "success");
         return ok(result);
     }
