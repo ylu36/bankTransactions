@@ -5,8 +5,7 @@ import play.libs.Json;
 import openllet.jena.PelletReasonerFactory;
 
 import org.apache.jena.ontology.*;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.reasoner.*;
 import org.apache.jena.shared.JenaException;
@@ -30,17 +29,15 @@ public class HomeController extends Controller {
         public HomeController() {
             System.out.println("init system...");
             this.ontReasoned = init();
-            this.Merchant = ontReasoned.getOntClass(NS + "Person");
-        //     this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
-        //     this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
-        //     System.out.println(Merchant);
-        //     System.out.println(Consumer);
-        //     this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
-        //     this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
-        //     this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
-        //     this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
-        //     this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
-        //     this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
+            this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
+            this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
+            this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
+            this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
+            this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
+            this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
+            this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
+            this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
+            this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
         }
 
         public OntModel init() {            
@@ -115,10 +112,7 @@ public class HomeController extends Controller {
     public Result addMerchant(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
-        System.out.println("uri is " + merchant);
-        String uri = merchant.getURI();
-        Individual dpb = ontReasoned.getIndividual(NS + id);
-        System.out.println(dpb);
+        System.out.println("merchant uri is " + merchant);
         result.put("status", "success");
         return ok(result);
     }
@@ -126,7 +120,7 @@ public class HomeController extends Controller {
     public Result addConsumer(String id) {
         ObjectNode result = Json.newObject();
         Individual consumer = ontReasoned.createIndividual(NS + id, Consumer);
-        // System.out.println("uri is " + consumer.getURI());
+        System.out.println("consumer uri is " + consumer);
         result.put("status", "success");
         return ok(result);
     }
@@ -138,6 +132,10 @@ public class HomeController extends Controller {
         Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
         transaction.addProperty(hasSender, tx);
         transaction.addProperty(hasReceiver, rx);
+        String RDF = ontReasoned.getNsPrefixURI("rdf");
+        Property type = ontReasoned.getProperty(RDF, "type");
+        System.out.println("tx type = " + tx.getPropertyResourceValue(type).toString());
+        System.out.println("rx type = " + rx.getPropertyResourceValue(type).toString());
         result.put("status", "success");
         return ok(result);
     }
