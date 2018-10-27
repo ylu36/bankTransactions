@@ -25,6 +25,8 @@
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasParticipant">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
     </owl:ObjectProperty>
     
 
@@ -123,7 +125,6 @@
 
     <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Consumer">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
-        <owl:disjointWith rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Merchant"/>
     </owl:Class>
     
 
@@ -139,7 +140,7 @@
     <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person">
-        <owl:disjointWith rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction"/>
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing"/>
     </owl:Class>
     
 
@@ -212,7 +213,21 @@
     <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Transaction">
-        <owl:disjointWith rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Trusted"/>
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing"/>
+        <rdfs:subClassOf>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasReceiver"/>
+                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#hasSender"/>
+                        <owl:someValuesFrom rdf:resource="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#Person"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -232,6 +247,12 @@
             </owl:Class>
         </owl:equivalentClass>
     </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl#domainThing"/>
     
 
 
