@@ -24,6 +24,7 @@ public class HomeController extends Controller {
     OntModel ontReasoned;
     OntClass Merchant, Trusted, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
     OntProperty hasReceiver, hasSender;
+    List<Bank> banks; 
     @Inject
     Drools drools;
 
@@ -41,23 +42,24 @@ public class HomeController extends Controller {
             this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
             this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
             this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
+            this.banks = new ArrayList<>();
         }
 
-        public Result index() {
-            System.out.println("init system...");
-            final Bank bank = new Bank();
-            bank.isBlacklisted = false;
-            bank.nationality = "local";
-            drools.kieSession.insert(bank);
-            final Request request = new Request();
-            request.category = "Weapons";
-            request.amount = 100;
-            request.bank = bank;
-            drools.kieSession.insert(request);
-            drools.kieSession.fireAllRules();
+        // public Result index() {
+        //     System.out.println("init system...");
+        //     final Bank bank = new Bank();
+        //     bank.isBlacklisted = false;
+        //     bank.nationality = "local";
+        //     drools.kieSession.insert(bank);
+        //     final Request request = new Request();
+        //     request.category = "Weapons";
+        //     request.amount = 100;
+        //     request.bank = bank;
+        //     drools.kieSession.insert(request);
+        //     drools.kieSession.fireAllRules();
     
-            return ok("rules are running... check the console.");
-        }
+        //     return ok("rules are running... check the console.");
+        // }
         
         public OntModel init() {            
             // Read the ontology. No reasoner yet.
@@ -80,11 +82,6 @@ public class HomeController extends Controller {
                 je.printStackTrace();
                 System.exit(0);
             }
-        
-            // baseOntology.setNsPrefix( "csc750", NS ); // Just for compact printing; doesn't really matter
-        
-            // This will create an ontology that has a reasoner attached.
-            // This means that it will automatically infer classes an individual belongs to, according to restrictions, etc.
             OntModel ontReasoned = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC, baseOntology);
             return ontReasoned;
         }
@@ -165,6 +162,13 @@ public class HomeController extends Controller {
     public Result reset() {
         ObjectNode result = Json.newObject();
         this.ontReasoned = init();
+        result.put("status", "success");
+        return ok(result);
+    }
+
+    public Result addbank(String nationality, String id) {
+        ObjectNode result = Json.newObject();
+        banks.add(new Bank(id, nationality));
         result.put("status", "success");
         return ok(result);
     }

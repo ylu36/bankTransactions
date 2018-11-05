@@ -6,9 +6,9 @@ public class Request {
     public String sender, receiver;
     public String category;
     public String timeStamp; // = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-    // public boolean isSenderTrusted() {
-
-    // }
+    public boolean areParcipitantsTrusted() {
+        return true;
+    }
 
     public void setSender(String s) {
         sender = s;
