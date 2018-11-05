@@ -14,17 +14,19 @@ import javax.inject.Singleton;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.io.*;
- 
+import plugins.Drools;
+
+import drools.*;
 public class HomeController extends Controller {
     String source_file = "../csc750.owl"; 
     String source_url = "http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl";
-     
-//     String source_file = "../pizza.owl"; // This is your file on the disk
-// String source_url = "http://www.co-ode.org/ontologies/pizza/pizza.owl"; // Remember that IRI from before?
     String NS = source_url + "#";
     OntModel ontReasoned;
     OntClass Merchant, Trusted, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
     OntProperty hasReceiver, hasSender;
+    @Inject
+    Drools drools;
+
     @Inject
         public HomeController() {
             System.out.println("init system...");
@@ -41,6 +43,22 @@ public class HomeController extends Controller {
             this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
         }
 
+        public Result index() {
+            System.out.println("init system...");
+            final Bank bank = new Bank();
+            bank.isBlacklisted = false;
+            bank.nationality = "local";
+            drools.kieSession.insert(bank);
+            final Request request = new Request();
+            request.category = "Weapons";
+            request.amount = 100;
+            request.bank = bank;
+            drools.kieSession.insert(request);
+            drools.kieSession.fireAllRules();
+    
+            return ok("rules are running... check the console.");
+        }
+        
         public OntModel init() {            
             // Read the ontology. No reasoner yet.
             OntModel baseOntology = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
@@ -71,10 +89,7 @@ public class HomeController extends Controller {
             return ontReasoned;
         }
     
-    public Result index() {
-        return ok(views.html.index.render());
-    }
-
+    
     public Result addMerchant(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);

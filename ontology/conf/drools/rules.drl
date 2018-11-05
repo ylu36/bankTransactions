@@ -1,0 +1,20 @@
+package drools
+
+rule "transactions"
+      dialect "mvel"
+  when
+      $b : Bank(isBlacklisted == false, nationality : "local")
+      
+  then
+      System.out.println( $b.nationality );
+end
+
+rule "transactions12323"
+      dialect "mvel"
+  when
+      $t : Request( category : "Weapons")
+  then
+      $t.setAmount(500);
+      $t.setSender("Sender123");
+      System.out.println( $t.sender );
+end
