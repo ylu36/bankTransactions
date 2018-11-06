@@ -61,8 +61,7 @@ public class HomeController extends Controller {
         //     return ok("rules are running... check the console.");
         // }
         
-        public OntModel init() {            
-            // Read the ontology. No reasoner yet.
+        public OntModel init() {   
             OntModel baseOntology = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
             try
             {
@@ -103,7 +102,24 @@ public class HomeController extends Controller {
         return ok(result);
     }
 
-    public Result addTransaction(String senderID, String receiverID, String transactionID) {
+    public Result addTransaction(String senderID, String receiverID, String bankID, String category, int amount, String transactionRequestID) {
+        ObjectNode result = Json.newObject();
+        Request request = new Request(senderID, receiverID, bankID, category, amount, transactionRequestID);
+        request.senderTrusted = isParticipantTrusted(senderID);
+        request.receiverTrusted = isParticipantTrusted(receiverID);
+        // Individual tx = ontReasoned.getIndividual(NS + senderID);
+        // Individual rx = ontReasoned.getIndividual(NS + receiverID);
+        // Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
+        // transaction.addProperty(hasSender, tx);
+        // transaction.addProperty(hasReceiver, rx);
+        result.put("status", "success");
+        drools.kieSession.insert(request);
+        drools.kieSession.fireAllRules();
+    
+        //     return ok("rules are running... check the console.");
+        return ok(result);
+    }
+    public Result addTransaction1(String senderID, String receiverID, String transactionID) {
         ObjectNode result = Json.newObject();
         Individual tx = ontReasoned.getIndividual(NS + senderID);
         Individual rx = ontReasoned.getIndividual(NS + receiverID);
@@ -113,7 +129,6 @@ public class HomeController extends Controller {
         result.put("status", "success");
         return ok(result);
     }
-
     public Result isCommercial(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
@@ -159,6 +174,15 @@ public class HomeController extends Controller {
         return ok(result);
     }
     
+    public boolean isParticipantTrusted(String id) {
+        boolean flag = false;
+        Individual merchant = ontReasoned.getIndividual(NS + id);
+        if(merchant.hasOntClass(Trusted) && (merchant.hasOntClass(Trusted) == true))
+                flag = true;
+        
+        return flag;
+    }
+
     public Result reset() {
         ObjectNode result = Json.newObject();
         this.ontReasoned = init();
@@ -166,7 +190,7 @@ public class HomeController extends Controller {
         return ok(result);
     }
 
-    public Result addbank(String nationality, String id) {
+    public Result addBank(String nationality, String id) {
         ObjectNode result = Json.newObject();
         banks.add(new Bank(id, nationality));
         result.put("status", "success");
