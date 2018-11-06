@@ -1,12 +1,13 @@
 package drools;
 
 public class Bank {
-    public String nationality, id;
+    public String type, id;
     public boolean isBlacklisted;
     public int averageAmout;
-    public Bank(String Id, String nationality) {
+    public Bank(String Id, String type) {
         this.id = id;       
-        this.nationality = nationality;
+        this.isBlacklisted = false;
+        this.type = type;
         this.averageAmout = 0;
     }
 }

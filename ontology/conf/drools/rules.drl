@@ -1,12 +1,12 @@
 package drools
 
-rule "transactions"
+rule "1: check if bank is blacklisted"
       dialect "mvel"
   when
-      $b : Bank(isBlacklisted == false, nationality : "local")
+      $b : Bank(isBlacklisted == false)
       
   then
-      System.out.println( $b.nationality );
+      System.out.println( "not blacklisted" );
 end
 
 rule "weapon rule"

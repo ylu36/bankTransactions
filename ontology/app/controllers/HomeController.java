@@ -49,7 +49,7 @@ public class HomeController extends Controller {
         //     System.out.println("init system...");
         //     final Bank bank = new Bank();
         //     bank.isBlacklisted = false;
-        //     bank.nationality = "local";
+        //     bank.type = "local";
         //     drools.kieSession.insert(bank);
         //     final Request request = new Request();
         //     request.category = "Weapons";
@@ -105,6 +105,17 @@ public class HomeController extends Controller {
     public Result addTransaction(String senderID, String receiverID, String bankID, String category, int amount, String transactionRequestID) {
         ObjectNode result = Json.newObject();
         Request request = new Request(senderID, receiverID, bankID, category, amount, transactionRequestID);
+        // check if the bank from list 'banks' with bankID is blacklisted
+        System.out.println(banks.size());
+        for(Bank bank: banks) {
+            System.out.println(bank.id); //TODO: get a null here
+            if(bank.id.equals(bankID)) {
+                drools.kieSession.insert(bank);
+                if(bank.isBlacklisted) {
+                    System.out.println("bank blacklisted");
+                }
+            }
+        }
         request.senderTrusted = isParticipantTrusted(senderID);
         request.receiverTrusted = isParticipantTrusted(receiverID);
         // Individual tx = ontReasoned.getIndividual(NS + senderID);
@@ -190,9 +201,10 @@ public class HomeController extends Controller {
         return ok(result);
     }
 
-    public Result addBank(String nationality, String id) {
+    public Result addBank(String type, String id) {
         ObjectNode result = Json.newObject();
-        banks.add(new Bank(id, nationality));
+        banks.add(new Bank(id, type));
+        System.out.println("banks have " + banks.size() + "with id=" + id);
         result.put("status", "success");
         return ok(result);
     }
