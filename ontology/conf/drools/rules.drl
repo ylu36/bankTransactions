@@ -12,24 +12,28 @@ end
 rule "weapon rule"
       dialect "mvel"
   when
+      $b : Bank(isBlacklisted == false)
       $t : Request( category : "Weapons", senderTrusted == true, receiverTrusted == true)
   then
-      
-      System.out.println( $t.senderID  );
+      $b.setAverage($t.amount);
+      System.out.println( "weapon rule approved with " + $t.amount  );
 end
 
 rule "4: A request with amount >$100,000 must have > 1 participants Trusted"
     dialect "mvel"
   when
+      $b : Bank(isBlacklisted == false)
       $t : Request( amount > 100000, senderTrusted == true || receiverTrusted == true)
   then      
+      $b.setAverage($t.amount);
       System.out.println( "request approved"  );
 end
 
 rule "A request with amount >10 times the average amount for a bank should be rejected (except if it’s the bank’s first transaction)."
     dialect "mvel"
   when
-      $t : Request( amount > 100000, senderTrusted == true || receiverTrusted == true)
-  then      
-      System.out.println( "request approved"  );
+      $b : Bank(averageAmount > 0)
+      $t : Request( amount > 10 * $b.averageAmount)
+  then     
+      System.out.println( "request NOT approved"  );
 end

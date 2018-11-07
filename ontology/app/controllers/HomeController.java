@@ -108,25 +108,30 @@ public class HomeController extends Controller {
         // check if the bank from list 'banks' with bankID is blacklisted
         System.out.println(banks.size());
         for(Bank bank: banks) {
-            System.out.println(bank.id); //TODO: get a null here
+            System.out.println("bank id = " + bank.id + " and type = " + bank.type); 
+        }
+        for(Bank bank: banks) {
+            System.out.println("bank id = " + bank.id); 
             if(bank.id.equals(bankID)) {
                 drools.kieSession.insert(bank);
                 if(bank.isBlacklisted) {
                     System.out.println("bank blacklisted");
                 }
+                request.senderTrusted = isParticipantTrusted(senderID);
+                request.receiverTrusted = isParticipantTrusted(receiverID);
+                // Individual tx = ontReasoned.getIndividual(NS + senderID);
+                // Individual rx = ontReasoned.getIndividual(NS + receiverID);
+                // Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
+                // transaction.addProperty(hasSender, tx);
+                // transaction.addProperty(hasReceiver, rx);
+                result.put("status", "success");
+                drools.kieSession.insert(request);
+                drools.kieSession.fireAllRules();
+                System.out.println("bank average is " + bank.averageAmount);
             }
         }
-        request.senderTrusted = isParticipantTrusted(senderID);
-        request.receiverTrusted = isParticipantTrusted(receiverID);
-        // Individual tx = ontReasoned.getIndividual(NS + senderID);
-        // Individual rx = ontReasoned.getIndividual(NS + receiverID);
-        // Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
-        // transaction.addProperty(hasSender, tx);
-        // transaction.addProperty(hasReceiver, rx);
-        result.put("status", "success");
-        drools.kieSession.insert(request);
-        drools.kieSession.fireAllRules();
-    
+        
+        
         //     return ok("rules are running... check the console.");
         return ok(result);
     }
