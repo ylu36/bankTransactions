@@ -24,7 +24,7 @@ public class HomeController extends Controller {
     OntModel ontReasoned;
     OntClass Merchant, Trusted, Consumer, Transaction, CommercialTransaction, RefundTransaction, PersonalTransaction, PurchaseTransaction;
     OntProperty hasReceiver, hasSender;
-    List<Bank> banks; 
+    Set<Bank> banks; 
     @Inject
     Drools drools;
 
@@ -42,7 +42,7 @@ public class HomeController extends Controller {
             this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
             this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
             this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
-            this.banks = new ArrayList<>();
+            this.banks = new HashSet<>();
         }
 
         // public Result index() {
@@ -106,16 +106,12 @@ public class HomeController extends Controller {
         ObjectNode result = Json.newObject();
         Request request = new Request(senderID, receiverID, bankID, category, amount, transactionRequestID);
         // check if the bank from list 'banks' with bankID is blacklisted
-        System.out.println(banks.size());
         for(Bank bank: banks) {
-            System.out.println("bank id = " + bank.id + " and type = " + bank.type); 
-        }
-        for(Bank bank: banks) {
-            System.out.println("bank id = " + bank.id); 
             if(bank.id.equals(bankID)) {
                 drools.kieSession.insert(bank);
                 if(bank.isBlacklisted) {
                     System.out.println("bank blacklisted");
+                    break;
                 }
                 request.senderTrusted = isParticipantTrusted(senderID);
                 request.receiverTrusted = isParticipantTrusted(receiverID);
