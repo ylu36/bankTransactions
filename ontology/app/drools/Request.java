@@ -5,7 +5,7 @@ public class Request {
     public Bank bank;
     public int amount;
     public String senderID, receiverID, bankID;
-    public boolean senderTrusted, receiverTrusted;
+    public boolean senderTrusted, receiverTrusted, approved;
     public String category, transactionRequestID;
     public String timestamp; 
     
@@ -17,8 +17,12 @@ public class Request {
         this.receiverTrusted = true;
         this.category = category;
         this.amount = amount;
+        this.approved = false;
         this.transactionRequestID = transactionRequestID;
         this.timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
     }
 
+    public void setApproval() {
+        this.approved = true;
+    }
 }

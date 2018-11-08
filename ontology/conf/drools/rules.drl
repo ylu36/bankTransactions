@@ -2,35 +2,55 @@ package drools
 
 rule "1: check if bank is blacklisted"
       dialect "mvel"
+      activation-group "group"
+      salience 10
   when
-      $b : Bank(isBlacklisted == false)
+      $b : Bank(isBlacklisted == true)
       
   then
-      System.out.println( "not blacklisted" );
+      System.out.println( "bank is blacklisted" );
+end
+
+rule "2: Medical requests must go through"
+      dialect "mvel"
+      activation-group "group"
+      salience 5
+  when
+      $b : Bank(isBlacklisted == false)
+      $t : Request( category : "Medical")      
+  then
+      System.out.println( "Medical request must go through" );
+      $b.setAverage($t.amount);
+      $t.setApproval();
 end
 
 rule "weapon rule"
       dialect "mvel"
+      activation-group "group"
   when
       $b : Bank(isBlacklisted == false)
       $t : Request( category : "Weapons", senderTrusted == true, receiverTrusted == true)
   then
       $b.setAverage($t.amount);
+      $t.setApproval();
       System.out.println( "weapon rule approved with " + $t.amount  );
 end
 
 rule "4: A request with amount >$100,000 must have > 1 participants Trusted"
     dialect "mvel"
+    activation-group "group"
   when
       $b : Bank(isBlacklisted == false)
       $t : Request( amount > 100000, senderTrusted == true || receiverTrusted == true)
   then      
       $b.setAverage($t.amount);
+      $t.setApproval();
       System.out.println( "request approved"  );
 end
 
 rule "A request with amount >10 times the average amount for a bank should be rejected (except if it’s the bank’s first transaction)."
     dialect "mvel"
+    activation-group "group"
   when
       $b : Bank(averageAmount > 0)
       $t : Request( amount > 10 * $b.averageAmount)
