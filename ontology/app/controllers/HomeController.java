@@ -113,34 +113,44 @@ public class HomeController extends Controller {
                     System.out.println("bank blacklisted");
                     break;
                 }
+                
                 request.senderTrusted = isParticipantTrusted(senderID);
                 request.receiverTrusted = isParticipantTrusted(receiverID);
-                // Individual tx = ontReasoned.getIndividual(NS + senderID);
-                // Individual rx = ontReasoned.getIndividual(NS + receiverID);
-                // Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
-                // transaction.addProperty(hasSender, tx);
-                // transaction.addProperty(hasReceiver, rx);
-                result.put("status", "success");
+                if(category.equals("Medical")) {
+                    request.approved = true;
+                    bank.setAverage(amount, request.senderTrusted, request.receiverTrusted);
+                }
                 drools.kieSession.insert(request);
                 drools.kieSession.fireAllRules();
-                System.out.println("bank average is " + bank.averageAmount);
+                if(!request.approved) {
+                    System.out.println("Request is rejected!");
+                    bank.transactionRejected ++;
+                    if(bank.transactionRejected == 3) {
+                        bank.isBlacklisted = true;
+                        System.out.println("bank blacklisted");
+                    }
+                }
+                else {
+                    System.out.println("bank average is " + bank.averageAmount);
+                    System.out.println("Request is live!");
+                    bank.transactionRejected = 0;
+                    addTransactionToOntology(senderID, receiverID, transactionRequestID);
+                }
+                break;
             }
         }
-        
-        
-        //     return ok("rules are running... check the console.");
+        result.put("status", "success");
         return ok(result);
     }
-    public Result addTransaction1(String senderID, String receiverID, String transactionID) {
-        ObjectNode result = Json.newObject();
+
+    public void addTransactionToOntology(String senderID, String receiverID, String transactionID) {
         Individual tx = ontReasoned.getIndividual(NS + senderID);
         Individual rx = ontReasoned.getIndividual(NS + receiverID);
         Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
         transaction.addProperty(hasSender, tx);
         transaction.addProperty(hasReceiver, rx);
-        result.put("status", "success");
-        return ok(result);
     }
+
     public Result isCommercial(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);

@@ -13,8 +13,8 @@ public class Request {
         this.senderID = senderID;
         this.receiverID = receiverID;
         this.bankID = bankID;
-        this.senderTrusted = true;
-        this.receiverTrusted = true;
+        this.senderTrusted = false;
+        this.receiverTrusted = false;
         this.category = category;
         this.amount = amount;
         this.approved = false;
@@ -22,7 +22,7 @@ public class Request {
         this.timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
     }
 
-    public void setApproval() {
-        this.approved = true;
+    public void setApproval(boolean f) {
+        this.approved = f;
     }
 }
