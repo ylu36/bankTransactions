@@ -24,4 +24,12 @@ public class Bank {
     public void incrementFailure() {
         this.transactionRejected ++;
     }
+
+    public void clearFailure() {
+        this.transactionRejected = 0;
+    }
+
+    public void setBlacklist() {
+        this.isBlacklisted = true;
+    }
 }

@@ -15,8 +15,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.io.*;
 import plugins.Drools;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import drools.*;
+import java.io.IOException; 
+
 public class HomeController extends Controller {
     String source_file = "../csc750.owl"; 
     String source_url = "http://www.semanticweb.org/james/ontologies/2018/9/csc750.owl";
@@ -27,69 +30,54 @@ public class HomeController extends Controller {
     Set<Bank> banks; 
     @Inject
     Drools drools;
-
+    final static Logger logger = LoggerFactory.getLogger(HomeController.class);
     @Inject
-        public HomeController() {
-            System.out.println("init system...");
-            this.ontReasoned = init();
-            this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
-            this.Trusted = ontReasoned.getOntClass(NS + "Trusted");
-            this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
-            this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
-            this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
-            this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
-            this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
-            this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
-            this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
-            this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
-            this.banks = new HashSet<>();
-        }
+    public HomeController() {
+        System.out.println("init system...");
+        this.ontReasoned = init();
+        this.Merchant = ontReasoned.getOntClass(NS + "Merchant");
+        this.Trusted = ontReasoned.getOntClass(NS + "Trusted");
+        this.Consumer = ontReasoned.getOntClass(NS + "Consumer");
+        this.Transaction = ontReasoned.getOntClass(NS + "Transaction");
+        this.PurchaseTransaction = ontReasoned.getOntClass(NS + "Purchase_transaction");
+        this.PersonalTransaction = ontReasoned.getOntClass(NS + "Personal_transaction");
+        this.RefundTransaction = ontReasoned.getOntClass(NS + "Refund_transaction");
+        this.CommercialTransaction = ontReasoned.getOntClass(NS + "Commercial_transaction");
+        this.hasSender = ontReasoned.getObjectProperty(NS + "hasSender");
+        this.hasReceiver = ontReasoned.getObjectProperty(NS + "hasReceiver");
+        this.banks = new HashSet<>();
+    }
 
-        // public Result index() {
-        //     System.out.println("init system...");
-        //     final Bank bank = new Bank();
-        //     bank.isBlacklisted = false;
-        //     bank.type = "local";
-        //     drools.kieSession.insert(bank);
-        //     final Request request = new Request();
-        //     request.category = "Weapons";
-        //     request.amount = 100;
-        //     request.bank = bank;
-        //     drools.kieSession.insert(request);
-        //     drools.kieSession.fireAllRules();
-    
-        //     return ok("rules are running... check the console.");
-        // }
-        
-        public OntModel init() {   
-            OntModel baseOntology = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
+    public OntModel init() {   
+        OntModel baseOntology = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
+        try
+        {
+            InputStream in = FileManager.get().open(source_file);
             try
             {
-                InputStream in = FileManager.get().open(source_file);
-                try
-                {
-                    baseOntology.read(in, null);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+                baseOntology.read(in, null);
             }
-            catch (JenaException je)
+            catch (Exception e)
             {
-                System.err.println("ERROR" + je.getMessage());
-                je.printStackTrace();
-                System.exit(0);
+                e.printStackTrace();
             }
-            OntModel ontReasoned = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC, baseOntology);
-            return ontReasoned;
         }
-    
+        catch (JenaException je)
+        {
+            System.err.println("ERROR" + je.getMessage());
+            je.printStackTrace();
+            System.exit(0);
+        }
+        OntModel ontReasoned = ModelFactory.createOntologyModel(PelletReasonerFactory.THE_SPEC, baseOntology);
+        return ontReasoned;
+    }
+
     
     public Result addMerchant(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
         System.out.println("merchant uri is " + merchant);
+        logger.info("merchant uri is " + merchant);
         result.put("status", "success");
         return ok(result);
     }
@@ -116,24 +104,24 @@ public class HomeController extends Controller {
                 
                 request.senderTrusted = isParticipantTrusted(senderID);
                 request.receiverTrusted = isParticipantTrusted(receiverID);
-                if(category.equals("Medical")) {
-                    request.approved = true;
-                    bank.setAverage(amount, request.senderTrusted, request.receiverTrusted);
-                }
+                // if(category.equals("medical")) {
+                //     request.approved = true;
+                //     bank.setAverage(amount, request.senderTrusted, request.receiverTrusted);
+                // }
                 drools.kieSession.insert(request);
                 drools.kieSession.fireAllRules();
                 if(!request.approved) {
-                    System.out.println("Request is rejected!");
-                    bank.transactionRejected ++;
-                    if(bank.transactionRejected == 3) {
-                        bank.isBlacklisted = true;
-                        System.out.println("bank blacklisted");
-                    }
+                    // System.out.println("Request is rejected! " );
+                    // bank.transactionRejected ++;
+                    // if(bank.transactionRejected == 3) {
+                    //     bank.isBlacklisted = true;
+                    //     System.out.println("bank blacklisted");
+                    // }
                 }
                 else {
-                    System.out.println("bank average is " + bank.averageAmount);
-                    System.out.println("Request is live!");
-                    bank.transactionRejected = 0;
+                    // System.out.println("bank average is " + bank.averageAmount);
+                    // System.out.println("Request is live!");
+                    // bank.transactionRejected = 0;
                     addTransactionToOntology(senderID, receiverID, transactionRequestID);
                 }
                 break;
