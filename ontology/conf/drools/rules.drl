@@ -1,6 +1,7 @@
 package drools
 import helper.MyLogger;
-import function helper.MyLogger.log;
+import function helper.MyLogger.success_log;
+import function helper.MyLogger.fail_log;
 dialect "java"
 
 rule "1: check if bank is blacklisted"
@@ -10,7 +11,9 @@ rule "1: check if bank is blacklisted"
   when
       $b : Bank(isBlacklisted == true)
   then
-      log( "bank is blacklisted" );
+      //String message = "REJECT BECAUSE OF RULE 1: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+       //                 + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      //log(message);
 end
 
 rule "2: medical rules must go through"
@@ -21,7 +24,10 @@ rule "2: medical rules must go through"
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
       $t.setApproval(true);
-      log( "medical rule approved");
+      String message = "ACCEPT: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                        + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+     //String message = $t.transactionRequestID;
+      success_log(message);
 end
 
 rule "3. weapon rule"
