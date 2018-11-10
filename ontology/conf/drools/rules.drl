@@ -1,18 +1,19 @@
 package drools
+import helper.MyLogger;
+import function helper.MyLogger.log;
+dialect "java"
 
 rule "1: check if bank is blacklisted"
-      dialect "mvel"
       activation-group "group"
       lock-on-active true
       salience 10
   when
       $b : Bank(isBlacklisted == true)
   then
-      System.out.println( "bank is blacklisted" );
+      log( "bank is blacklisted" );
 end
 
 rule "2: medical rules must go through"
-      dialect "mvel"
   when
       $b : Bank(isBlacklisted == false) 
       $t : Request(category == "medical")      
@@ -20,7 +21,7 @@ rule "2: medical rules must go through"
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
       $t.setApproval(true);
-      System.out.println( "medical rule approved");
+      log( "medical rule approved");
 end
 
 rule "3. weapon rule"
