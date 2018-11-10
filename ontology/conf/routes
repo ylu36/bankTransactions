@@ -11,7 +11,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # RESTful APIs 
 POST    /addconsumer/:id                                        controllers.HomeController.addConsumer(id: String)
 POST    /addmerchant/:id                                        controllers.HomeController.addMerchant(id: String)
-POST    /addtransaction/:senderID/:receiverID/:transactionID    controllers.HomeController.addTransaction1(senderID: String, receiverID: String, transactionID: String)
+# POST    /addtransaction/:senderID/:receiverID/:transactionID    controllers.HomeController.addTransaction1(senderID: String, receiverID: String, transactionID: String)
 GET     /iscommercial/:transactionID                            controllers.HomeController.isCommercial(transactionID: String)
 GET     /ispersonal/:transactionID                              controllers.HomeController.isPersonal(transactionID: String)
 GET     /ispurchase/:transactionID                              controllers.HomeController.isPurchase(transactionID: String)

@@ -3,6 +3,7 @@ package drools
 rule "1: check if bank is blacklisted"
       dialect "mvel"
       activation-group "group"
+      lock-on-active true
       salience 10
   when
       $b : Bank(isBlacklisted == true)
@@ -12,84 +13,60 @@ end
 
 rule "2: medical rules must go through"
       dialect "mvel"
-      activation-group "group"
   when
-      $b : Bank(isBlacklisted == false)
-      $t : Request( category : "medical")
+      $b : Bank(isBlacklisted == false) 
+      $t : Request(category == "medical")      
   then
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
       $t.setApproval(true);
-      System.out.println( "medical rule approved" );
+      System.out.println( "medical rule approved");
 end
 
-rule "3. weapon rule: 2 requirements satisfied"
-      dialect "mvel"
-      activation-group "group"
+rule "3. weapon rule"
   when
-      $b : Bank(isBlacklisted == false, type : "local")
-      $t : Request( category : "weapons", senderTrusted == true, receiverTrusted == true)
+      $b : Bank(isBlacklisted == false)
+      $t : Request( category == "weapons")
+      if ($b.type.equals("local") && $t.senderTrusted == true && $t.receiverTrusted == true) do[ALLOW1]
+      else do [REJECT]
   then
+      System.out.println( "here");
+  then[ALLOW1]
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
       $t.setApproval(true);
       System.out.println( "weapon rule approved with " + $t.amount);
-end
-
-rule "3. weapon rule: check trusted participants"
-      dialect "mvel"
-      activation-group "group"
-      salience -10
-  when
-      $b : Bank(isBlacklisted == false)
-      $t : Request( category : "weapons", senderTrusted == false || receiverTrusted == false)
-  then
+      drools.halt();
+  then[REJECT]
       $t.setApproval(false);
       $b.incrementFailure();
-      System.out.println( "weapon rule rejected " + $t.category);
-end
-
-rule "3. weapon rule: check bank local"
-      dialect "mvel"
-      activation-group "group"
-      salience -10
-  when
-      $b : Bank(isBlacklisted == false, type : "international")
-      $t : Request( category : "weapons")
-  then
-      $t.setApproval(false);
-      $b.incrementFailure();
-      System.out.println( "weapon rule rejected!!" );
+      System.out.println( "weapon rule rejected in rule 3");
+      drools.halt();
 end
 
 rule "4: A request with amount >$100,000 must have > 1 participants Trusted"
-    dialect "mvel"
-    activation-group "group2"
   when
       $b : Bank(isBlacklisted == false)
-      $t : Request( amount > 100000, senderTrusted == true || receiverTrusted == true)
-  then      
+      $t : Request( amount > 100000)
+      if($t.senderTrusted == true || $t.receiverTrusted == true) do[ALLOW2]
+      else do [REJECT]
+  then
+      System.out.println( "here");
+  then[ALLOW2]
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
       $t.setApproval(true);
-      System.out.println( ">$100,000 request approved" );
-end
-
-rule "4: A request of amount >$100,000 with 2 participants unrusted"
-      dialect "mvel"
-      activation-group "group2"
-  when
-      $b : Bank(isBlacklisted == false)
-      $t : Request( amount > 100000, senderTrusted == false && receiverTrusted == false)
-  then
+      System.out.println( ">$100,000 request approved");
+      drools.halt();
+  then[REJECT]
       $t.setApproval(false);
       $b.incrementFailure();
       System.out.println( "2 participants rule rejected");
+      drools.halt();
 end
 
 rule "5. Rejecting transactions with abnormal amount"
     dialect "mvel"
-    activation-group "group3"
   when
       $b : Bank(averageAmount > 0)
       $t : Request( amount > 10 * $b.averageAmount)
@@ -101,7 +78,6 @@ end
 
 rule "6. Bank has under 25% trusted participants"
     dialect "mvel"
-    activation-group "group4"
   when
       $b : Bank(trustedInstance / frequency < 0.25)
       $t : Request()
@@ -113,7 +89,6 @@ end
 
 rule "7: Three failed transactions in a row blacklists a bank"
     dialect "mvel"
-    activation-group "group5"
   when
       $b : Bank(transactionRejected == 3)
   then     

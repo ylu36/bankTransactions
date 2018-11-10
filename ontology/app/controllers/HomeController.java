@@ -137,6 +137,7 @@ public class HomeController extends Controller {
         Individual transaction = ontReasoned.createIndividual(NS + transactionID, Transaction);
         transaction.addProperty(hasSender, tx);
         transaction.addProperty(hasReceiver, rx);
+        System.out.println("Request is live! " + tx.hasOntClass(Trusted) + rx.hasOntClass(Trusted));
     }
 
     public Result isCommercial(String id) {
