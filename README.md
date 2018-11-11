@@ -90,8 +90,11 @@ GET     /isrefund/:transactionID
 GET     /istrusted/:merchantID  
 GET /isblacklisted/:bankID 
 GET /bankrejections/:bankID
-POST    /reset   
+
+POST    /reset  
+
 GET /rejectionlog
+
 GET /acceptancelog 
 
 **Note: This project is created in Linux environment; Endpoints tested with [Postman](https://www.getpostman.com/).
