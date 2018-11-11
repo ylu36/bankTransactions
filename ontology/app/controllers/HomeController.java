@@ -77,7 +77,6 @@ public class HomeController extends Controller {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.createIndividual(NS + id, Merchant);
         System.out.println("merchant uri is " + merchant);
-        logger.info("merchant uri is " + merchant);
         result.put("status", "success");
         return ok(result);
     }
@@ -96,6 +95,8 @@ public class HomeController extends Controller {
         // check if the bank from list 'banks' with bankID is blacklisted
         for(Bank bank: banks) {
             if(bank.id.equals(bankID)) {
+                System.out.println(bank.averageAmount + " " + bank.frequency);
+
                 drools.kieSession.insert(bank);
                 if(bank.isBlacklisted) {
                     System.out.println("bank blacklisted");
@@ -104,30 +105,84 @@ public class HomeController extends Controller {
                 
                 request.senderTrusted = isParticipantTrusted(senderID);
                 request.receiverTrusted = isParticipantTrusted(receiverID);
-                // if(category.equals("medical")) {
-                //     request.approved = true;
-                //     bank.setAverage(amount, request.senderTrusted, request.receiverTrusted);
-                // }
+                if(bank.averageAmount > 0 && (amount > 10 * bank.averageAmount )) {
+                    BufferedWriter output = null;
+                    String message = "REJECT BECAUSE OF RULE 5: " + request.transactionRequestID + '\t' + request.bankID + '\t' + request.senderID + '\t' + request.receiverID
+                        + '\t' + request.amount + '\t' + request.category + '\t' + request.timestamp;
+                    try {
+                        File file = new File("fail.log");
+                        output = new BufferedWriter(new FileWriter(file, true));
+                        output.write(message + '\n');
+                    } catch ( IOException e ) {
+                        e.printStackTrace();
+                    } finally {
+                        if ( output != null ) {
+                            try {output.close();} catch (Exception ex) {/*ignore*/}
+                        }
+                    }
+                    result.put("status", "failure");
+                    result.put("reason", 5);
+                    break;
+                }
+                if((double)bank.trustedInstance / bank.frequency < 0.25) {
+                    BufferedWriter output = null;
+                    String message = "REJECT BECAUSE OF RULE 6: " + request.transactionRequestID + '\t' + request.bankID + '\t' + request.senderID + '\t' + request.receiverID
+                        + '\t' + request.amount + '\t' + request.category + '\t' + request.timestamp;
+                    try {
+                        File file = new File("fail.log");
+                        output = new BufferedWriter(new FileWriter(file, true));
+                        output.write(message + '\n');
+                    } catch ( IOException e ) {
+                        e.printStackTrace();
+                    } finally {
+                        if ( output != null ) {
+                            try {output.close();} catch (Exception ex) {/*ignore*/}
+                        }
+                    }
+                    result.put("status", "failure");
+                    result.put("reason", 6);
+                    break;
+                }
+
                 drools.kieSession.insert(request);
                 drools.kieSession.fireAllRules();
-                if(!request.approved) {
-                    // System.out.println("Request is rejected! " );
-                    // bank.transactionRejected ++;
-                    // if(bank.transactionRejected == 3) {
-                    //     bank.isBlacklisted = true;
-                    //     System.out.println("bank blacklisted");
-                    // }
+                if(request.statusCode > 0) {
+                    System.out.println("Request is rejected! " );
+                    bank.transactionRejected ++;
+                    if(bank.transactionRejected == 3) {
+                        bank.isBlacklisted = true;
+                        System.out.println("bank blacklisted");
+                    }
+                    result.put("status", "failure");
+                    result.put("reason", request.statusCode);
                 }
                 else {
+                    bank.setAverage(amount, request.senderTrusted, request.receiverTrusted);
+                    if(!category.equals("medical") && !category.equals("weapons")) {
+                        BufferedWriter output = null;
+                        String message = "ACCEPT: " + request.transactionRequestID + '\t' + request.bankID + '\t' + request.senderID + '\t' + request.receiverID
+                            + '\t' + request.amount + '\t' + request.category + '\t' + request.timestamp;
+                        try {
+                            File file = new File("success.log");
+                            output = new BufferedWriter(new FileWriter(file, true));
+                            output.write(message + '\n');
+                        } catch ( IOException e ) {
+                            e.printStackTrace();
+                        } finally {
+                            if ( output != null ) {
+                                try {output.close();} catch (Exception ex) {/*ignore*/}
+                            }
+                        }
+                    }
                     // System.out.println("bank average is " + bank.averageAmount);
                     // System.out.println("Request is live!");
                     // bank.transactionRejected = 0;
                     addTransactionToOntology(senderID, receiverID, transactionRequestID);
+                    result.put("status", "success");
                 }
                 break;
             }
         }
-        result.put("status", "success");
         return ok(result);
     }
 
@@ -143,44 +198,73 @@ public class HomeController extends Controller {
     public Result isCommercial(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
-        String flag = (transaction.hasOntClass(CommercialTransaction)) ? "true" : "false";
-        result.put("result", flag);
+        if(transaction != null) {
+            String flag = (transaction.hasOntClass(CommercialTransaction)) ? "true" : "false";
+            result.put("status", "success");
+            result.put("result", flag);
+        }
+        else {
+            result.put("status", "failure");
+            result.put("reason", "not a transaction");
+        }
         return ok(result);
     }
 
     public Result isPersonal(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
-        String flag = (transaction.hasOntClass(PersonalTransaction)) ? "true" : "false";
-        result.put("result", flag);
+        if(transaction != null) {
+            String flag = (transaction.hasOntClass(PersonalTransaction)) ? "true" : "false";
+            result.put("status", "success");
+            result.put("result", flag);
+        }
+        else {
+            result.put("status", "failure");
+            result.put("reason", "not a transaction");
+        }
         return ok(result);
     }
 
     public Result isPurchase(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
-        String flag = (transaction.hasOntClass(PurchaseTransaction)) ? "true" : "false";
-        result.put("result", flag);
+        if(transaction != null) {
+            String flag = (transaction.hasOntClass(PurchaseTransaction)) ? "true" : "false";
+            result.put("status", "success");
+            result.put("result", flag);
+        }
+        else {
+            result.put("status", "failure");
+            result.put("reason", "not a transaction");
+        }
         return ok(result);
     }
 
     public Result isRefund(String id) {
         ObjectNode result = Json.newObject();
         Individual transaction = ontReasoned.getIndividual(NS + id);
-        String flag = (transaction.hasOntClass(RefundTransaction)) ? "true" : "false";
-        result.put("result", flag);
+        if(transaction != null) {
+            String flag = (transaction.hasOntClass(RefundTransaction)) ? "true" : "false";
+            result.put("status", "success");
+            result.put("result", flag);
+        }
+        else {
+            result.put("status", "failure");
+            result.put("reason", "not a transaction");
+        }
         return ok(result);
     }
 
     public Result isTrusted(String id) {
         ObjectNode result = Json.newObject();
         Individual merchant = ontReasoned.getIndividual(NS + id);
-        if(merchant.hasOntClass(Trusted)) {
+        if(merchant != null) {
             String flag = (merchant.hasOntClass(Trusted))? "true" : "false";
             result.put("result", flag);
         }
         else {
-            result.put("result", "not a merchant");
+            result.put("status", "failure");
+            result.put("reason", "not a merchant");
         }
         return ok(result);
     }
@@ -188,7 +272,7 @@ public class HomeController extends Controller {
     public boolean isParticipantTrusted(String id) {
         boolean flag = false;
         Individual merchant = ontReasoned.getIndividual(NS + id);
-        if(merchant.hasOntClass(Trusted) && (merchant.hasOntClass(Trusted) == true))
+        if(merchant != null && (merchant.hasOntClass(Trusted) == true))
                 flag = true;
         
         return flag;
@@ -197,6 +281,9 @@ public class HomeController extends Controller {
     public Result reset() {
         ObjectNode result = Json.newObject();
         this.ontReasoned = init();
+        this.banks = new HashSet<>();
+        new File("./success.log").delete();
+        new File("./failure.log").delete();
         result.put("status", "success");
         return ok(result);
     }
@@ -206,6 +293,43 @@ public class HomeController extends Controller {
         banks.add(new Bank(id, type));
         System.out.println("banks have " + banks.size() + "with id=" + id);
         result.put("status", "success");
+        return ok(result);
+    }
+
+    public Result isBankBlacklisted(String bankID) {
+        ObjectNode result = Json.newObject();
+        boolean found = false;
+        for(Bank bank: banks) {
+            if(bank.id.equals(bankID)) {
+                boolean flag = bank.isBlacklisted;
+                result.put("status", "success");
+                result.put("result", flag);
+                found = true;
+            }
+        }
+        if(!found) {            
+            result.put("status", "failure");
+            result.put("reason", "not a bank");
+        }
+        return ok(result);
+    }
+
+    public Result countBankRejections(String bankID) {
+        ObjectNode result = Json.newObject();
+        boolean found = false;
+        int num = 0;
+        for(Bank bank: banks) {
+            if(bank.id.equals(bankID)) {
+                num = bank.transactionRejected;
+                result.put("status", "success");
+                result.put("rejections", num);
+                found = true;
+            }
+        }
+        if(!found) {            
+            result.put("status", "failure");
+            result.put("reason", "not a bank");
+        }
         return ok(result);
     }
 }
