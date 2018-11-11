@@ -23,4 +23,4 @@ POST    /transactionrequest/:senderID/:receiverID/:bankID/:category/:amount/:tra
 GET     /isblacklisted/:bankID                           controllers.HomeController.isBankBlacklisted(bankID: String)
 GET     /bankrejections/:bankID                                 controllers.HomeController.countBankRejections(bankID: String)
 GET /rejectionlog                                               controllers.HomeController.readRejections
-#GET /acceptancelog                                              controllers.HomeController.readAcceptance
+GET /acceptancelog                                              controllers.HomeController.readAcceptance
