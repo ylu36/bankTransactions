@@ -20,3 +20,7 @@ GET     /istrusted/:merchantID                                  controllers.Home
 POST    /reset                                                  controllers.HomeController.reset
 POST    /addbank/:type/:bankID                           controllers.HomeController.addBank(type: String, bankID: String)
 POST    /transactionrequest/:senderID/:receiverID/:bankID/:category/:amount/:transactionRequestID   controllers.HomeController.addTransaction(senderID: String, receiverID: String, bankID: String, category: String, amount: Integer, transactionRequestID: String)
+GET     /isblacklisted/:bankID                           controllers.HomeController.isBankBlacklisted(bankID: String)
+GET     /bankrejections/:bankID                                 controllers.HomeController.countBankRejections(bankID: String)
+GET /rejectionlog                                               controllers.HomeController.readRejections
+#GET /acceptancelog                                              controllers.HomeController.readAcceptance

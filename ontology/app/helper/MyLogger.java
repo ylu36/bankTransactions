@@ -8,6 +8,7 @@ public class MyLogger {
             File file = new File("success.log");
             output = new BufferedWriter(new FileWriter(file, true));
             output.write(text);
+            output.write('\n');
         } catch ( IOException e ) {
             e.printStackTrace();
         } finally {
@@ -22,6 +23,7 @@ public class MyLogger {
             File file = new File("failure.log");
             output = new BufferedWriter(new FileWriter(file, true));
             output.write(text);
+            output.write('\n');
         } catch ( IOException e ) {
             e.printStackTrace();
         } finally {

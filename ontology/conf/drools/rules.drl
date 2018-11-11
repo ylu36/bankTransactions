@@ -10,10 +10,12 @@ rule "1: check if bank is blacklisted"
       salience 10
   when
       $b : Bank(isBlacklisted == true)
+      $t : Request()
   then
-      //String message = "REJECT BECAUSE OF RULE 1: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
-       //                 + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
-      //log(message);
+      $t.setApproval(1);
+      String message = "REJECT BECAUSE OF RULE 1: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                       + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);
 end
 
 rule "2: medical rules must go through"
@@ -23,10 +25,10 @@ rule "2: medical rules must go through"
   then
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
-      $t.setApproval(true);
+      $t.setApproval(0);
+      
       String message = "ACCEPT: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
                         + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
-     //String message = $t.transactionRequestID;
       success_log(message);
 end
 
@@ -41,13 +43,17 @@ rule "3. weapon rule"
   then[ALLOW1]
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
-      $t.setApproval(true);
-      System.out.println( "weapon rule approved with " + $t.amount);
+      $t.setApproval(0);
+      String message = "ACCEPT: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                        + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      success_log(message);      
       drools.halt();
   then[REJECT]
-      $t.setApproval(false);
+      $t.setApproval(3);
       $b.incrementFailure();
-      System.out.println( "weapon rule rejected in rule 3");
+      String message = "REJECT BECAUSE OF RULE 3: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                        + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);
       drools.halt();
 end
 
@@ -62,43 +68,49 @@ rule "4: A request with amount >$100,000 must have > 1 participants Trusted"
   then[ALLOW2]
       $b.setAverage($t.amount, $t.senderTrusted, $t.receiverTrusted);
       $b.clearFailure();
-      $t.setApproval(true);
-      System.out.println( ">$100,000 request approved");
+      $t.setApproval(0);
+      String message = "ACCEPT: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                        + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      success_log(message);    
       drools.halt();
   then[REJECT]
-      $t.setApproval(false);
+      $t.setApproval(4);
       $b.incrementFailure();
-      System.out.println( "2 participants rule rejected");
+      String message = "REJECT BECAUSE OF RULE 4: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID
+                        + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);
       drools.halt();
 end
 
 rule "5. Rejecting transactions with abnormal amount"
-    dialect "mvel"
   when
-      $b : Bank(averageAmount > 0)
-      $t : Request( amount > 10 * $b.averageAmount)
+      $b : Bank($b.averageAmount > 0)
+      $t : Request( $t.amount > 10 * $b.averageAmount)
   then     
-      System.out.println( "request rejected because of rule 5"  );
-      $t.setApproval(false);
+      $t.setApproval(5);System.out.println( $b.averageAmount + " " + $t.amount);
       $b.incrementFailure();
+      String message = "REJECT BECAUSE OF RULE 5: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);
 end
 
 rule "6. Bank has under 25% trusted participants"
-    dialect "mvel"
   when
-      $b : Bank(trustedInstance / frequency < 0.25)
+      $b : Bank((double)trustedInstance / frequency < 0.25)
       $t : Request()
   then     
-      System.out.println( "need more trustee" );
+      String message = "REJECT BECAUSE OF RULE 6: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);      
       $b.incrementFailure();
-      $t.setApproval(false);
+      $t.setApproval(6);
 end
 
 rule "7: Three failed transactions in a row blacklists a bank"
-    dialect "mvel"
   when
       $b : Bank(transactionRejected == 3)
+      $t : Request()
   then     
-      System.out.println( "blacklist an bank" );
+      String message = "REJECT BECAUSE OF RULE 7: " + $t.transactionRequestID + '\t' + $t.bankID + '\t' + $t.senderID + '\t' + $t.receiverID + '\t' + $t.amount + '\t' + $t.category + '\t' + $t.timestamp;
+      fail_log(message);      
       $b.setBlacklist();
+      $t.setApproval(7);
 end

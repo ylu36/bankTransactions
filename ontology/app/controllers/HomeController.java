@@ -95,11 +95,24 @@ public class HomeController extends Controller {
         // check if the bank from list 'banks' with bankID is blacklisted
         for(Bank bank: banks) {
             if(bank.id.equals(bankID)) {
-                System.out.println(bank.averageAmount + " " + bank.frequency);
-
                 drools.kieSession.insert(bank);
                 if(bank.isBlacklisted) {
-                    System.out.println("bank blacklisted");
+                    BufferedWriter output = null;
+                    String message = "REJECT BECAUSE OF RULE 7: " + request.transactionRequestID + '\t' + request.bankID + '\t' + request.senderID + '\t' + request.receiverID
+                        + '\t' + request.amount + '\t' + request.category + '\t' + request.timestamp;
+                    try {
+                        File file = new File("fail.log");
+                        output = new BufferedWriter(new FileWriter(file, true));
+                        output.write(message + '\n');
+                    } catch ( IOException e ) {
+                        e.printStackTrace();
+                    } finally {
+                        if ( output != null ) {
+                            try {output.close();} catch (Exception ex) {/*ignore*/}
+                        }
+                    }
+                    result.put("status", "failure");
+                    result.put("reason", 7);
                     break;
                 }
                 
@@ -124,26 +137,7 @@ public class HomeController extends Controller {
                     result.put("reason", 5);
                     break;
                 }
-                if((double)bank.trustedInstance / bank.frequency < 0.25) {
-                    BufferedWriter output = null;
-                    String message = "REJECT BECAUSE OF RULE 6: " + request.transactionRequestID + '\t' + request.bankID + '\t' + request.senderID + '\t' + request.receiverID
-                        + '\t' + request.amount + '\t' + request.category + '\t' + request.timestamp;
-                    try {
-                        File file = new File("fail.log");
-                        output = new BufferedWriter(new FileWriter(file, true));
-                        output.write(message + '\n');
-                    } catch ( IOException e ) {
-                        e.printStackTrace();
-                    } finally {
-                        if ( output != null ) {
-                            try {output.close();} catch (Exception ex) {/*ignore*/}
-                        }
-                    }
-                    result.put("status", "failure");
-                    result.put("reason", 6);
-                    break;
-                }
-
+                
                 drools.kieSession.insert(request);
                 drools.kieSession.fireAllRules();
                 if(request.statusCode > 0) {
@@ -151,7 +145,6 @@ public class HomeController extends Controller {
                     bank.transactionRejected ++;
                     if(bank.transactionRejected == 3) {
                         bank.isBlacklisted = true;
-                        System.out.println("bank blacklisted");
                     }
                     result.put("status", "failure");
                     result.put("reason", request.statusCode);
@@ -331,5 +324,45 @@ public class HomeController extends Controller {
             result.put("reason", "not a bank");
         }
         return ok(result);
+    }
+
+    public Result readRejections() {
+        File file = new File("failure.log"); 
+        BufferedReader br = null;
+        String st = ""; 
+        try {
+            br = new BufferedReader(new FileReader(file)); 
+           
+            while (br.readLine() != null) {
+                st += br.readLine() + System.lineSeparator();
+            } 
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        } finally {
+            if ( br != null ) {
+                try {br.close();} catch (Exception ex) {/*ignore*/}
+            }
+        }
+        return ok(st);
+    }
+
+    public Result readAcceptance() {
+        File file = new File("success.log"); 
+        BufferedReader br = null;
+        String st = ""; 
+        try {
+            br = new BufferedReader(new FileReader(file)); 
+           
+            while (br.readLine() != null) {
+                st += br.readLine() + System.lineSeparator();
+            } 
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        } finally {
+            if ( br != null ) {
+                try {br.close();} catch (Exception ex) {/*ignore*/}
+            }
+        }
+        return ok(st);
     }
 }

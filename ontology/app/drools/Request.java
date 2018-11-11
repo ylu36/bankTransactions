@@ -8,7 +8,7 @@ public class Request {
     public boolean senderTrusted, receiverTrusted, approved;
     public String category, transactionRequestID;
     public String timestamp; 
-    
+    public int statusCode;
     public Request(String senderID, String receiverID, String bankID, String category, int amount, String transactionRequestID) {
         this.senderID = senderID;
         this.receiverID = receiverID;
@@ -17,12 +17,13 @@ public class Request {
         this.receiverTrusted = false;
         this.category = category;
         this.amount = amount;
-        this.approved = false;
+        this.approved = true;
+        this.statusCode = -1;
         this.transactionRequestID = transactionRequestID;
         this.timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
     }
 
-    public void setApproval(boolean f) {
-        this.approved = f;
-    }
+    public void setApproval(int c) {
+        this.statusCode = c;
+    }    
 }
